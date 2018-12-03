@@ -6,7 +6,7 @@ categories = [
     "no-std",
 ]
 description = "Peripheral access API for STM32F030 microcontrollers"
-# documentation = "https://docs.rs/stm32f042-hal"
+documentation = "https://docs.rs/stm32f030-hal"
 keywords = [
     "arm",
     "cortex-m",
