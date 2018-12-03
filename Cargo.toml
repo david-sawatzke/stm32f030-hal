@@ -16,8 +16,8 @@ keywords = [
 license = "0BSD"
 name = "stm32f030-hal"
 readme = "README.md"
-repository = "https://github.com/therealprof/stm32f042-hal"
-version = "0.6.5"
+repository = "https://github.com/david-sawatzke/stm32f030-hal"
+version = "0.6.6"
 
 [dependencies]
 bare-metal = "0.2.4"
