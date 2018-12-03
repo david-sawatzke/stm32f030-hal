@@ -5,7 +5,7 @@ extern crate cortex_m;
 extern crate cortex_m_rt;
 extern crate panic_halt;
 
-extern crate stm32f042_hal as hal;
+extern crate stm32f030_hal as hal;
 
 use hal::prelude::*;
 use hal::stm32;

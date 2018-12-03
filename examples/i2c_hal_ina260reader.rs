@@ -6,7 +6,7 @@ extern crate cortex_m_rt;
 extern crate embedded_hal;
 extern crate panic_halt;
 
-extern crate stm32f042_hal as hal;
+extern crate stm32f030_hal as hal;
 
 extern crate numtoa;
 
@@ -44,18 +44,18 @@ const SSD1306_CHARGE_PUMP: u8 = 0x8D;
 #[entry]
 fn main() -> ! {
     if let Some(p) = stm32::Peripherals::take() {
-        let gpiof = p.GPIOF.split();
+        let gpioa = p.GPIOA.split();
         let mut rcc = p.RCC.constrain();
         let _ = rcc.cfgr.freeze();
 
-        let scl = gpiof
-            .pf1
-            .into_alternate_af1()
+        let scl = gpioa
+            .pa9
+            .into_alternate_af4()
             .internal_pull_up(true)
             .set_open_drain();
-        let sda = gpiof
-            .pf0
-            .into_alternate_af1()
+        let sda = gpioa
+            .pa10
+            .into_alternate_af4()
             .internal_pull_up(true)
             .set_open_drain();
 

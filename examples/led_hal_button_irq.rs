@@ -6,7 +6,7 @@ extern crate cortex_m_rt;
 extern crate panic_halt;
 
 #[macro_use]
-extern crate stm32f042_hal as hal;
+extern crate stm32f030_hal as hal;
 
 use hal::delay::Delay;
 use hal::gpio::*;
@@ -23,7 +23,7 @@ use core::cell::RefCell;
 use core::ops::DerefMut;
 
 // Make our LED globally available
-static LED: Mutex<RefCell<Option<gpiob::PB3<Output<PushPull>>>>> = Mutex::new(RefCell::new(None));
+static LED: Mutex<RefCell<Option<gpiob::PA1<Output<PushPull>>>>> = Mutex::new(RefCell::new(None));
 
 // Make our delay provider globally available
 static DELAY: Mutex<RefCell<Option<Delay>>> = Mutex::new(RefCell::new(None));
@@ -34,8 +34,9 @@ static INT: Mutex<RefCell<Option<EXTI>>> = Mutex::new(RefCell::new(None));
 #[entry]
 fn main() -> ! {
     if let (Some(p), Some(cp)) = (Peripherals::take(), c_m_Peripherals::take()) {
+        let gpioa = p.GPIOA.split();
         let gpiob = p.GPIOB.split();
-        let syscfg = p.SYSCFG_COMP;
+        let syscfg = p.SYSCFG;
         let exti = p.EXTI;
 
         // Enable clock for SYSCFG
@@ -45,8 +46,8 @@ fn main() -> ! {
         // Configure PB1 as input (button)
         let _ = gpiob.pb1.into_pull_down_input();
 
-        // Configure PB3 as output (LED)
-        let mut led = gpiob.pb3.into_push_pull_output();
+        // Configure PA1 as output (LED)
+        let mut led = gpiob.pa1.into_push_pull_output();
 
         // Turn off LED
         led.set_low();
@@ -58,9 +59,7 @@ fn main() -> ! {
         let mut delay = Delay::new(cp.SYST, clocks);
 
         // Enable external interrupt for PB1
-        syscfg
-            .syscfg_exticr1
-            .modify(|_, w| unsafe { w.exti1().bits(1) });
+        syscfg.exticr1.modify(|_, w| unsafe { w.exti1().bits(1) });
 
         // Set interrupt request mask for line 1
         exti.imr.modify(|_, w| w.mr1().set_bit());

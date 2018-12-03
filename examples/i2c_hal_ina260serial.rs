@@ -6,7 +6,7 @@ extern crate cortex_m_rt;
 extern crate embedded_hal;
 extern crate panic_halt;
 
-extern crate stm32f042_hal as hal;
+extern crate stm32f030_hal as hal;
 
 extern crate ina260;
 extern crate numtoa;
@@ -26,27 +26,26 @@ use cortex_m_rt::entry;
 #[entry]
 fn main() -> ! {
     if let Some(p) = stm32::Peripherals::take() {
-        let gpiof = p.GPIOF.split();
         let gpioa = p.GPIOA.split();
         let mut clocks = p.RCC.constrain().cfgr.freeze();
 
         /* Initialise serial pins */
-        let tx = gpioa.pa9.into_alternate_af1();
-        let rx = gpioa.pa10.into_alternate_af1();
+        let tx = gpioa.pa2.into_alternate_af1();
+        let rx = gpioa.pa3.into_alternate_af1();
 
         /* Setup serial port */
         let serial = Serial::usart1(p.USART1, (tx, rx), 115_200.bps(), clocks);
         let (mut tx, mut _rx) = serial.split();
 
         /* Initialise I2C pins */
-        let scl = gpiof
-            .pf1
-            .into_alternate_af1()
+        let scl = gpioa
+            .pa9
+            .into_alternate_af4()
             .internal_pull_up(true)
             .set_open_drain();
-        let sda = gpiof
-            .pf0
-            .into_alternate_af1()
+        let sda = gpioa
+            .pa10
+            .into_alternate_af4()
             .internal_pull_up(true)
             .set_open_drain();
 
