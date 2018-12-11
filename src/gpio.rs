@@ -589,11 +589,13 @@ gpio!(GPIOC, gpioc, iopcen, PC, [
     PC15: (pb15, 15, Input<Floating>),
 ]);
 
-// LQFP64
-#[cfg(any(feature = "stm32f030r8", feature = "stm32f030rc"))]
-gpio!(GPIOD, gpiod, iopden, PD, [
-    PD2: (pd2, 2, Input<Floating>),
-]);
+// TODO Check if the bit is implemented
+// In the device crate the iopden bit is missing, so it won't compile
+// // LQFP64
+// #[cfg(any(feature = "stm32f030r8", feature = "stm32f030rc"))]
+// gpio!(GPIOD, gpiod, iopden, PD, [
+//     PD2: (pd2, 2, Input<Floating>),
+// ]);
 
 // TSSOP20 & LQFP32
 #[cfg(any(
