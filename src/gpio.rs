@@ -119,6 +119,17 @@ macro_rules! gpio {
                 }
             }
 
+            impl InputPin for $PXx<Output<OpenDrain>> {
+                fn is_high(&self) -> bool {
+                    !self.is_low()
+                }
+
+                fn is_low(&self) -> bool {
+                    // NOTE(unsafe) atomic read with no side effects
+                    unsafe { (*$GPIOX::ptr()).idr.read().bits() & (1 << self.i) == 0 }
+                }
+            }
+
             impl<MODE> InputPin for $PXx<Input<MODE>> {
                 fn is_high(&self) -> bool {
                     !self.is_low()
@@ -348,17 +359,26 @@ macro_rules! gpio {
                     }
                 }
 
+                impl InputPin for $PXi<Output<OpenDrain>> {
+                    fn is_high(&self) -> bool {
+                        !self.is_low()
+                    }
+
+                    fn is_low(&self) -> bool {
+                        // NOTE(unsafe) atomic read with no side effects
+                        unsafe { (*$GPIOX::ptr()).idr.read().bits() & (1 << $i) == 0 }
+                    }
+                }
+
                 impl<MODE> $PXi<Alternate<MODE>> {
                     /// Enables / disables the internal pull up
-                    pub fn internal_pull_up(self, on: bool) -> Self {
+                    pub fn internal_pull_up(&mut self, on: bool) {
                         let offset = 2 * $i;
                         let value = if on { 0b01 } else { 0b00 };
                         unsafe {
                             &(*$GPIOX::ptr()).pupdr.modify(|r, w| {
                                 w.bits((r.bits() & !(0b11 << offset)) | (value << offset))
                          })};
-
-                        self
                     }
                 }
 
@@ -435,7 +455,7 @@ macro_rules! gpio {
                     }
                 }
             )+
-
+                /// Get the pin number
                 impl<TYPE> $PXx<TYPE> {
                     pub fn get_id (&self) -> u8
                     {
