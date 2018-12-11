@@ -3,8 +3,7 @@ stm32f030-hal
 
 _stm32f030-hal_ contains a hardware abstraction on top of the peripheral access
 API for the STMicro stm32f030 series microcontroller. It's heavily based on
-[stm32f042-hal][] by therealprof, basically just modifying the pin definitions. (If there's a proper way
-to segregate it, this could basically be a smaller pull request).
+[stm32f042-hal][] by therealprof.
 
 This crate implements a partial set of the [embedded-hal][] traits.
 
