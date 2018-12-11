@@ -1,4 +1,4 @@
-use stm32::{RCC, TIM1, TIM14, TIM16, TIM17, TIM3};
+use stm32::{RCC, TIM1, TIM14, TIM15, TIM16, TIM17, TIM3, TIM6, TIM7};
 
 use cast::{u16, u32};
 use hal::timer::{CountDown, Periodic};
