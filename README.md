@@ -8,7 +8,14 @@ to segregate it, this could basically be a smaller pull request).
 
 This crate implements a partial set of the [embedded-hal][] traits.
 
-It currently only includes pin definitions for the stm32f030f4.
+The following chips are supported, choose via features:
+- stm32f030f4
+- stm32f030k6
+- stm32f030c6
+- stm32f030c8
+- stm32f030r8
+- stm32f030cc
+- stm32f030rc
 
 Some of the implementation was shamelessly adapted from the [stm32f103xx-hal][]
 crate by Jorge Aparicio.
