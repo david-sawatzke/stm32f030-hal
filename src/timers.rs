@@ -21,7 +21,7 @@ pub enum Event {
     TimeOut,
 }
 
-macro_rules! hal {
+macro_rules! timers {
     ($($TIM:ident: ($tim:ident, $timXen:ident, $timXrst:ident, $apbenr:ident, $apbrstr:ident),)+) => {
         $(
             impl Periodic for Timer<$TIM> {}
@@ -132,7 +132,7 @@ macro_rules! hal {
     feature = "stm32f030cc",
     feature = "stm32f030rc"
 ))]
-hal! {
+timers! {
     TIM1: (tim1, tim1en, tim1rst, apb2enr, apb2rstr),
     TIM3: (tim3, tim3en, tim3rst, apb1enr, apb1rstr),
     TIM14: (tim14, tim14en, tim14rst, apb1enr, apb1rstr),
@@ -146,12 +146,12 @@ hal! {
     feature = "stm32f030cc",
     feature = "stm32f030rc"
 ))]
-hal! {
+timers! {
     TIM6: (tim6, tim6en, tim6rst, apb1enr, apb1rstr),
     TIM15: (tim15, tim15en, tim15rst, apb2enr, apb2rstr),
 }
 
 #[cfg(any(feature = "stm32f030cc", feature = "stm32f030rc"))]
-hal! {
+timers! {
     TIM7: (tim7, tim7en, tim7rst, apb1enr, apb1rstr),
 }
