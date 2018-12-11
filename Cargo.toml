@@ -47,8 +47,16 @@ numtoa = "0.2.3"
 panic-halt = "0.2.0"
 
 [features]
-default = ["rt"]
+default = ["rt", "stm32f030rc"]
 rt = []
+stm32f030f4 = []
+stm32f030k6 = []
+stm32f030c6 = []
+stm32f030c8 = []
+stm32f030cc = []
+stm32f030r8 = []
+stm32f030rc = []
+
 
 [profile.dev]
 debug = true
