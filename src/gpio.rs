@@ -49,6 +49,62 @@ pub struct Output<MODE> {
 /// Push pull output (type state)
 pub struct PushPull;
 
+use hal::digital::{InputPin, OutputPin, StatefulOutputPin};
+use stm32;
+
+/// Fully erased pin
+// We can just pretend it's gpioa. It's modified using the bits and it can only be constructed out of already existing pins
+pub struct Pin<MODE> {
+    i: u8,
+    port: *const stm32::gpioa::RegisterBlock,
+    _mode: PhantomData<MODE>,
+}
+
+impl<MODE> StatefulOutputPin for Pin<Output<MODE>> {
+    fn is_set_high(&self) -> bool {
+        !self.is_set_low()
+    }
+
+    fn is_set_low(&self) -> bool {
+        // NOTE(unsafe) atomic read with no side effects
+        unsafe { (*self.port).odr.read().bits() & (1 << self.i) == 0 }
+    }
+}
+
+impl<MODE> OutputPin for Pin<Output<MODE>> {
+    fn set_high(&mut self) {
+        // NOTE(unsafe) atomic write to a stateless register
+        unsafe { (*self.port).bsrr.write(|w| w.bits(1 << self.i)) }
+    }
+
+    fn set_low(&mut self) {
+        // NOTE(unsafe) atomic write to a stateless register
+        unsafe { (*self.port).bsrr.write(|w| w.bits(1 << (self.i + 16))) }
+    }
+}
+
+impl InputPin for Pin<Output<OpenDrain>> {
+    fn is_high(&self) -> bool {
+        !self.is_low()
+    }
+
+    fn is_low(&self) -> bool {
+        // NOTE(unsafe) atomic read with no side effects
+        unsafe { (*self.port).idr.read().bits() & (1 << self.i) == 0 }
+    }
+}
+
+impl<MODE> InputPin for Pin<Input<MODE>> {
+    fn is_high(&self) -> bool {
+        !self.is_low()
+    }
+
+    fn is_low(&self) -> bool {
+        // NOTE(unsafe) atomic read with no side effects
+        unsafe { (*self.port).idr.read().bits() & (1 << self.i) == 0 }
+    }
+}
+
 macro_rules! gpio {
     ($GPIOX:ident, $gpiox:ident, $iopxenr:ident, $PXx:ident, [
         $($PXi:ident: ($pxi:ident, $i:expr, $MODE:ty),)+
@@ -63,7 +119,7 @@ macro_rules! gpio {
             use stm32::RCC;
             use super::{
                 Alternate, Floating, GpioExt, Input, OpenDrain, Output,
-                PullDown, PullUp, PushPull, AF0, AF1, AF2, AF3, AF4, AF5, AF6, AF7,
+                PullDown, PullUp, PushPull, AF0, AF1, AF2, AF3, AF4, AF5, AF6, AF7, Pin
             };
 
             /// GPIO parts
@@ -163,6 +219,38 @@ macro_rules! gpio {
                 }
             }
 
+            impl<MODE> $PXx<Input<MODE>> {
+                /// Erases the port from the type
+                ///
+                /// This is useful when you want to collect the pins into an array where you
+                /// need all the elements to have the same type
+                pub fn downgrade(self) -> Pin<Input<MODE>> {
+                    use stm32::gpioa;
+                    use core::intrinsics::transmute;
+                    Pin {
+                        i: self.i,
+                        port: unsafe{ transmute::<_, *const gpioa::RegisterBlock>($GPIOX::ptr())},
+                        _mode: self._mode,
+                    }
+                }
+            }
+
+            impl<MODE> $PXx<Output<MODE>> {
+                /// Erases the port from the type
+                ///
+                /// This is useful when you want to collect the pins into an array where you
+                /// need all the elements to have the same type
+                pub fn downgrade(self) -> Pin<Output<MODE>> {
+                    use stm32::gpioa;
+                    use core::intrinsics::transmute;
+                    Pin {
+                        i: self.i,
+                        port: unsafe{ transmute::<_, *const gpioa::RegisterBlock>($GPIOX::ptr())},
+                        _mode: self._mode,
+                    }
+                }
+            }
+
             $(
                 /// Pin
                 pub struct $PXi<MODE> {
@@ -253,7 +341,7 @@ macro_rules! gpio {
                     /// Configures the pin to operate as a pulled down input pin
                     pub fn into_pull_down_input(
                         self,
-                        ) -> $PXi<Input<PullDown>> {
+                    ) -> $PXi<Input<PullDown>> {
                         let offset = 2 * $i;
                         unsafe {
                             &(*$GPIOX::ptr()).pupdr.modify(|r, w| {
@@ -355,7 +443,7 @@ macro_rules! gpio {
                         unsafe {
                             &(*$GPIOX::ptr()).pupdr.modify(|r, w| {
                                 w.bits((r.bits() & !(0b11 << offset)) | (value << offset))
-                         })};
+                            })};
                     }
                 }
 
@@ -378,7 +466,7 @@ macro_rules! gpio {
                         unsafe {
                             &(*$GPIOX::ptr()).pupdr.modify(|r, w| {
                                 w.bits((r.bits() & !(0b11 << offset)) | (value << offset))
-                         })};
+                            })};
                     }
                 }
 
@@ -389,7 +477,7 @@ macro_rules! gpio {
                         unsafe {
                             &(*$GPIOX::ptr()).otyper.modify(|r, w| {
                                 w.bits(r.bits() | (1 << offset))
-                         })};
+                            })};
 
                         self
                     }
@@ -455,13 +543,13 @@ macro_rules! gpio {
                     }
                 }
             )+
-                /// Get the pin number
-                impl<TYPE> $PXx<TYPE> {
-                    pub fn get_id (&self) -> u8
-                    {
-                        self.i
-                    }
+            /// Get the pin number
+            impl<TYPE> $PXx<TYPE> {
+                pub fn get_id (&self) -> u8
+                {
+                    self.i
                 }
+            }
         }
     }
 }
