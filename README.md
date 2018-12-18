@@ -1,6 +1,9 @@
 stm32f030-hal
 =============
 
+## DEPRECATED
+Use [stm32f0xx-hal][] instead.
+
 _stm32f030-hal_ contains a hardware abstraction on top of the peripheral access
 API for the STMicro stm32f030 series microcontroller. It's heavily based on
 [stm32f042-hal][] by therealprof.
@@ -23,6 +26,7 @@ crate by Jorge Aparicio.
 [stm32f103xx-hal]: https://github.com/japaric/stm32f103xx-hal
 [embedded-hal]: https://github.com/japaric/embedded-hal.git
 [nucleo-f042k6]: https://os.mbed.com/platforms/ST-Nucleo-F042K6/
+[stm32f0xx-hal]: https://github.com/stm32-rs/stm32f0xx-hal
 
 License
 -------
